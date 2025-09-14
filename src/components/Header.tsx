@@ -63,9 +63,6 @@ const Header = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
-            <Button variant="premium" size="sm" className="hidden sm:flex">
-              Premium
-            </Button>
             <Button variant="ghost" size="sm">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Sign In</span>

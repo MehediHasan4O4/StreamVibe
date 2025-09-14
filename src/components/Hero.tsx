@@ -34,7 +34,7 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <Button variant="premium" size="lg" className="text-base px-8 py-6 h-auto">
+            <Button variant="default" size="lg" className="text-base px-8 py-6 h-auto">
               <Play className="h-5 w-5 mr-2 fill-current" />
               Start Watching Free
             </Button>

@@ -6,7 +6,6 @@ interface Channel {
   category: string;
   viewers?: string;
   isLive?: boolean;
-  isPremium?: boolean;
   image?: string;
 }
 
@@ -38,7 +37,6 @@ const CategorySection = ({ title, channels, onChannelClick }: CategorySectionPro
               category={channel.category}
               viewers={channel.viewers}
               isLive={channel.isLive}
-              isPremium={channel.isPremium}
               image={channel.image}
               onClick={() => onChannelClick?.(channel)}
             />
