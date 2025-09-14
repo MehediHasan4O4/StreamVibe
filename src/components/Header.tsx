@@ -63,9 +63,9 @@ const Header = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign In</span>
+            <Button variant="ghost" size="sm" className="lg:hidden">
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline">Search</span>
             </Button>
             
             {/* Mobile Menu Button */}

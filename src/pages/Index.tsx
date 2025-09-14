@@ -65,6 +65,11 @@ const Index = () => {
     });
   };
 
+  const getRelatedChannels = (channel: any) => {
+    const allChannels = [...sportsChannels, ...movieChannels, ...entertainmentChannels, ...newsChannels];
+    return allChannels.filter(c => c.category === channel?.category && c.id !== channel?.id);
+  };
+
   const closePlayer = () => {
     setIsPlayerOpen(false);
     setSelectedChannel(null);
@@ -136,6 +141,8 @@ const Index = () => {
         isOpen={isPlayerOpen}
         onClose={closePlayer}
         channel={selectedChannel}
+        relatedChannels={getRelatedChannels(selectedChannel)}
+        onChannelSelect={handleChannelClick}
       />
     </div>
   );
