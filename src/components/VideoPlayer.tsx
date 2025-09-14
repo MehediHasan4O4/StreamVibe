@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, Play, Pause, Volume2, VolumeX, Maximize, Users, Wifi, Settings, SkipForward, RotateCcw, Download, Share, PictureInPicture } from 'lucide-react';
-import Hls from 'hls.js';
+import { X, Play, Pause, Volume2, VolumeX, Maximize, Users, Wifi, Settings, SkipForward, RotateCcw, Download, Share } from 'lucide-react';
 
 interface VideoPlayerProps {
   isOpen: boolean;
@@ -22,63 +21,28 @@ interface VideoPlayerProps {
     isLive?: boolean;
   }>;
   onChannelSelect?: (channel: any) => void;
-  videoUrl: string;
 }
 
-const VideoPlayer = ({ 
-  isOpen, 
-  onClose, 
-  channel, 
-  relatedChannels = [], 
-  onChannelSelect,
-  videoUrl 
-}: VideoPlayerProps) => {
+const VideoPlayer = ({ isOpen, onClose, channel, relatedChannels = [], onChannelSelect }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(80);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
-  const [quality, setQuality] = useState('Auto');
+  const [quality, setQuality] = useState('HD');
   const [showSettings, setShowSettings] = useState(false);
-  const [isPip, setIsPip] = useState(false);
-  
   const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
+  // Sample video URL - in a real app, this would come from your streaming service
+  const videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !isOpen) return;
-
-    let hls: Hls | null = null;
-
-    const setupVideo = () => {
-      if (videoUrl.endsWith('.m3u8')) {
-        if (Hls.isSupported()) {
-          hls = new Hls();
-          hls.loadSource(videoUrl);
-          hls.attachMedia(video);
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            video.play().catch(() => {});
-          });
-        } else {
-          video.src = videoUrl;
-          video.play().catch(() => {});
-        }
-      } else {
-        video.src = videoUrl;
-        video.play().catch(() => {});
-      }
-    };
-
-    setupVideo();
-
-    return () => {
-      if (hls) hls.destroy();
-      video.pause();
-      video.src = '';
-    };
-  }, [isOpen, videoUrl]);
+    if (isOpen && videoRef.current) {
+      videoRef.current.play();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleMouseMove = () => {
@@ -128,7 +92,7 @@ const VideoPlayer = ({
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play();
       }
       setIsPlaying(!isPlaying);
     }
@@ -141,24 +105,20 @@ const VideoPlayer = ({
     }
   };
 
-  const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else if (containerRef.current) {
-      containerRef.current.requestFullscreen().catch(console.error);
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseInt(e.target.value);
+    setVolume(newVolume);
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume / 100;
     }
   };
 
-  const togglePip = async () => {
-    if (document.pictureInPictureElement) {
-      await document.exitPictureInPicture();
-      setIsPip(false);
-    } else if (videoRef.current) {
-      try {
-        await videoRef.current.requestPictureInPicture();
-        setIsPip(true);
-      } catch (error) {
-        console.error('PIP error:', error);
+  const toggleFullscreen = () => {
+    if (videoRef.current) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        videoRef.current.requestFullscreen();
       }
     }
   };
@@ -166,10 +126,7 @@ const VideoPlayer = ({
   if (!isOpen || !channel) return null;
 
   return (
-    <div 
-      ref={containerRef}
-      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-    >
+    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="w-full max-w-6xl mx-auto glass rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/50">
@@ -198,9 +155,10 @@ const VideoPlayer = ({
         </div>
 
         {/* Video Player */}
-        <div className="relative aspect-video bg-black group" ref={containerRef}>
+        <div className="relative aspect-video bg-black group">
           <video
             ref={videoRef}
+            src={videoUrl}
             className="w-full h-full object-cover"
             autoPlay
             loop
@@ -231,7 +189,7 @@ const VideoPlayer = ({
                 max={duration || 0}
                 value={currentTime}
                 onChange={handleSeek}
-                className="w-full h-1.5 bg-white/30 rounded-lg appearance-none cursor-pointer slider-thumb"
+                className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer slider-thumb"
               />
               <div className="flex justify-between text-xs text-white/70 mt-1">
                 <span>{formatTime(currentTime)}</span>
@@ -275,19 +233,19 @@ const VideoPlayer = ({
                   >
                     {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                   </Button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={isMuted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                    className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-xs text-white/70 min-w-[2rem]">{isMuted ? 0 : volume}%</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={togglePip}
-                  className="text-white hover:bg-white/20"
-                >
-                  <PictureInPicture className="h-4 w-4" />
-                </Button>
-
                 <Button
                   variant="ghost"
                   size="sm"
@@ -319,7 +277,7 @@ const VideoPlayer = ({
                       <div className="space-y-2">
                         <div className="text-xs text-white/70">Quality</div>
                         <div className="space-y-1">
-                          {['Auto', '4K', 'HD', 'SD'].map((q) => (
+                          {['4K', 'HD', 'SD'].map((q) => (
                             <button
                               key={q}
                               onClick={() => {setQuality(q); setShowSettings(false);}}
