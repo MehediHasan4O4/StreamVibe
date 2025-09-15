@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, Play, Pause, Volume2, VolumeX, Maximize, Users, Wifi, Settings, SkipForward, RotateCcw, Download, Share } from 'lucide-react';
+import { X, Play, Pause, VolumeX, Volume2, Maximize, Users, Wifi, Settings, PictureInPicture2 } from 'lucide-react';
 
 interface VideoPlayerProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface VideoPlayerProps {
     category: string;
     viewers?: string;
     isLive?: boolean;
+    url?: string;
   } | null;
   relatedChannels?: Array<{
     id: string;
@@ -19,6 +20,7 @@ interface VideoPlayerProps {
     category: string;
     viewers?: string;
     isLive?: boolean;
+    url?: string;
   }>;
   onChannelSelect?: (channel: any) => void;
 }
@@ -26,17 +28,16 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ isOpen, onClose, channel, relatedChannels = [], onChannelSelect }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(80);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
-  const [quality, setQuality] = useState('HD');
+  const [quality, setQuality] = useState('Auto');
   const [showSettings, setShowSettings] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Sample video URL - in a real app, this would come from your streaming service
-  const videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+  // Use the channel URL if available, otherwise use sample
+  const videoUrl = channel?.url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
   useEffect(() => {
     if (isOpen && videoRef.current) {
@@ -105,11 +106,10 @@ const VideoPlayer = ({ isOpen, onClose, channel, relatedChannels = [], onChannel
     }
   };
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseInt(e.target.value);
-    setVolume(newVolume);
+  const handleVolumeChange = () => {
     if (videoRef.current) {
-      videoRef.current.volume = newVolume / 100;
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
     }
   };
 
@@ -119,6 +119,20 @@ const VideoPlayer = ({ isOpen, onClose, channel, relatedChannels = [], onChannel
         document.exitFullscreen();
       } else {
         videoRef.current.requestFullscreen();
+      }
+    }
+  };
+
+  const togglePip = async () => {
+    if (videoRef.current) {
+      try {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+        } else {
+          await videoRef.current.requestPictureInPicture();
+        }
+      } catch (error) {
+        console.log('PIP not supported');
       }
     }
   };
@@ -180,24 +194,10 @@ const VideoPlayer = ({ isOpen, onClose, channel, relatedChannels = [], onChannel
           </div>
 
           {/* Video Controls Overlay */}
-          <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-            {/* Progress Bar */}
-            <div className="mb-4">
-              <input
-                type="range"
-                min="0"
-                max={duration || 0}
-                value={currentTime}
-                onChange={handleSeek}
-                className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer slider-thumb"
-              />
-              <div className="flex justify-between text-xs text-white/70 mt-1">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(duration)}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-white">
+          <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            
+            {/* Control Bar */}
+            <div className="flex items-center justify-between text-white p-4">
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
@@ -211,57 +211,18 @@ const VideoPlayer = ({ isOpen, onClose, channel, relatedChannels = [], onChannel
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={handleVolumeChange}
                   className="text-white hover:bg-white/20"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20"
-                >
-                  <SkipForward className="h-4 w-4" />
-                </Button>
-                
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleMute}
-                    className="text-white hover:bg-white/20"
-                  >
-                    {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                  </Button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={isMuted ? 0 : volume}
-                    onChange={handleVolumeChange}
-                    className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <span className="text-xs text-white/70 min-w-[2rem]">{isMuted ? 0 : volume}%</span>
+                <div className="flex items-center gap-2 text-sm text-white/70">
+                  <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20"
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20"
-                >
-                  <Share className="h-4 w-4" />
-                </Button>
-
                 <div className="relative">
                   <Button
                     variant="ghost"
@@ -277,7 +238,7 @@ const VideoPlayer = ({ isOpen, onClose, channel, relatedChannels = [], onChannel
                       <div className="space-y-2">
                         <div className="text-xs text-white/70">Quality</div>
                         <div className="space-y-1">
-                          {['4K', 'HD', 'SD'].map((q) => (
+                          {['Auto', '1080p', '720p', '480p', '360p'].map((q) => (
                             <button
                               key={q}
                               onClick={() => {setQuality(q); setShowSettings(false);}}
@@ -295,12 +256,33 @@ const VideoPlayer = ({ isOpen, onClose, channel, relatedChannels = [], onChannel
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={togglePip}
+                  className="text-white hover:bg-white/20"
+                >
+                  <PictureInPicture2 className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={toggleFullscreen}
                   className="text-white hover:bg-white/20"
                 >
                   <Maximize className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+
+            {/* Progress Bar - At the very bottom */}
+            <div className="px-4 pb-2">
+              <input
+                type="range"
+                min="0"
+                max={duration || 0}
+                value={currentTime}
+                onChange={handleSeek}
+                className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer slider-thumb"
+              />
             </div>
           </div>
         </div>

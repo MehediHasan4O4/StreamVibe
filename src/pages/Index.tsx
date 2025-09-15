@@ -1,73 +1,101 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import CategorySection from '@/components/CategorySection';
 import VideoPlayer from '@/components/VideoPlayer';
+import { parseM3U, loadPlaylists, M3UChannel, M3UPlaylist } from '@/utils/m3u-parser';
 import { useToast } from "@/hooks/use-toast";
-
-// Sample data for different categories
-const sportsChannels = [
-  { id: '1', name: 'Sports Network 1', category: 'Sports', viewers: '45K', isLive: true },
-  { id: '2', name: 'Football Central', category: 'Football', viewers: '38K', isLive: true },
-  { id: '3', name: 'Basketball Live', category: 'Basketball', viewers: '29K', isLive: true },
-  { id: '4', name: 'Tennis Channel', category: 'Tennis', viewers: '15K', isLive: true },
-  { id: '5', name: 'Olympics 2024', category: 'Olympics', viewers: '62K', isLive: true },
-  { id: '6', name: 'Cricket World', category: 'Cricket', viewers: '41K', isLive: true },
-  { id: '7', name: 'Racing Network', category: 'Racing', viewers: '23K', isLive: true },
-  { id: '8', name: 'Golf Masters', category: 'Golf', viewers: '18K', isLive: true },
-];
-
-const movieChannels = [
-  { id: '9', name: 'Action Movies', category: 'Action', viewers: '52K', isLive: true },
-  { id: '10', name: 'Comedy Central', category: 'Comedy', viewers: '34K', isLive: true },
-  { id: '11', name: 'Drama Plus', category: 'Drama', viewers: '28K', isLive: true },
-  { id: '12', name: 'Sci-Fi Network', category: 'Sci-Fi', viewers: '31K', isLive: true },
-  { id: '13', name: 'Horror Zone', category: 'Horror', viewers: '19K', isLive: true },
-  { id: '14', name: 'Classic Cinema', category: 'Classic', viewers: '22K', isLive: true },
-  { id: '15', name: 'Family Movies', category: 'Family', viewers: '37K', isLive: true },
-  { id: '16', name: 'Indie Films', category: 'Independent', viewers: '14K', isLive: true },
-];
-
-const entertainmentChannels = [
-  { id: '17', name: 'Music Videos', category: 'Music', viewers: '41K', isLive: true },
-  { id: '18', name: 'Reality TV', category: 'Reality', viewers: '33K', isLive: true },
-  { id: '19', name: 'Game Shows', category: 'Games', viewers: '26K', isLive: true },
-  { id: '20', name: 'Talk Shows', category: 'Talk', viewers: '29K', isLive: true },
-  { id: '21', name: 'Variety Show', category: 'Variety', viewers: '24K', isLive: true },
-  { id: '22', name: 'Awards Live', category: 'Awards', viewers: '48K', isLive: true },
-  { id: '23', name: 'Celebrity News', category: 'News', viewers: '17K', isLive: true },
-  { id: '24', name: 'Lifestyle TV', category: 'Lifestyle', viewers: '21K', isLive: true },
-];
-
-const newsChannels = [
-  { id: '25', name: 'Global News', category: 'World News', viewers: '67K', isLive: true },
-  { id: '26', name: 'Business Today', category: 'Business', viewers: '32K', isLive: true },
-  { id: '27', name: 'Tech Updates', category: 'Technology', viewers: '28K', isLive: true },
-  { id: '28', name: 'Weather Live', category: 'Weather', viewers: '19K', isLive: true },
-  { id: '29', name: 'Local News', category: 'Local', viewers: '35K', isLive: true },
-  { id: '30', name: 'Health News', category: 'Health', viewers: '22K', isLive: true },
-  { id: '31', name: 'Breaking News', category: 'Breaking', viewers: '54K', isLive: true },
-  { id: '32', name: 'Political Desk', category: 'Politics', viewers: '39K', isLive: true },
-];
 
 const Index = () => {
   const { toast } = useToast();
   const [selectedChannel, setSelectedChannel] = useState<any>(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [playlists, setPlaylists] = useState<M3UPlaylist[]>([]);
+  const [allChannels, setAllChannels] = useState<M3UChannel[]>([]);
+  const [searchResults, setSearchResults] = useState<M3UChannel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadM3UPlaylists();
+  }, []);
+
+  const loadM3UPlaylists = async () => {
+    setLoading(true);
+    try {
+      const loadedPlaylists = await loadPlaylists();
+      setPlaylists(loadedPlaylists);
+      
+      // Combine all channels for search
+      const combined = loadedPlaylists.flatMap(playlist => playlist.channels);
+      setAllChannels(combined);
+      
+      toast({
+        title: "Playlists Loaded",
+        description: `${combined.length} channels from ${loadedPlaylists.length} playlists`,
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load playlists",
+        variant: "destructive",
+        duration: 3000,
+      });
+      console.error('Error loading playlists:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    
+    const filtered = allChannels.filter(channel => 
+      channel.name.toLowerCase().includes(query.toLowerCase()) ||
+      channel.category.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    setSearchResults(filtered.slice(0, 10)); // Limit to 10 results
+  };
+
+  // Group channels by category for display
+  const channelsByCategory = playlists.length > 0 ? 
+    playlists.reduce((acc, playlist) => {
+      const groupedByCategory = playlist.channels.reduce((catAcc, channel) => {
+        const category = channel.category || 'General';
+        if (!catAcc[category]) {
+          catAcc[category] = [];
+        }
+        catAcc[category].push(channel);
+        return catAcc;
+      }, {} as Record<string, M3UChannel[]>);
+      
+      Object.keys(groupedByCategory).forEach(category => {
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category] = [...acc[category], ...groupedByCategory[category]];
+      });
+      
+      return acc;
+    }, {} as Record<string, M3UChannel[]>) : {};
 
   const handleChannelClick = (channel: any) => {
     setSelectedChannel(channel);
     setIsPlayerOpen(true);
     toast({
       title: "Now Streaming",
-      description: `Loading ${channel.name} - ${channel.viewers} viewers watching`,
+      description: `Loading ${channel.name}`,
       duration: 2000,
     });
   };
 
-  const getRelatedChannels = (channel: any) => {
-    const allChannels = [...sportsChannels, ...movieChannels, ...entertainmentChannels, ...newsChannels];
-    return allChannels.filter(c => c.category === channel?.category && c.id !== channel?.id);
+  const getRelatedChannels = (currentChannel: any) => {
+    const categoryChannels = channelsByCategory[currentChannel?.category] || [];
+    return categoryChannels.filter(ch => ch.id !== currentChannel?.id).slice(0, 8);
   };
 
   const closePlayer = () => {
@@ -77,38 +105,49 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header 
+        onSearch={handleSearch}
+        searchResults={searchResults}
+        onChannelSelect={handleChannelClick}
+      />
       
       <main>
         {/* Hero Section */}
         <Hero />
 
-        {/* Live Channels Categories */}
-        <div className="space-y-4">
-          <CategorySection
-            title="Sports Channels"
-            channels={sportsChannels}
-            onChannelClick={handleChannelClick}
-          />
-
-          <CategorySection
-            title="Movie Channels"
-            channels={movieChannels}
-            onChannelClick={handleChannelClick}
-          />
-
-          <CategorySection
-            title="Entertainment Channels"
-            channels={entertainmentChannels}
-            onChannelClick={handleChannelClick}
-          />
-
-          <CategorySection
-            title="News & Information"
-            channels={newsChannels}
-            onChannelClick={handleChannelClick}
-          />
-        </div>
+        {loading ? (
+          <div className="container mx-auto px-4 py-16">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-lg text-muted-foreground">Loading M3U playlists...</p>
+              <p className="text-sm text-muted-foreground mt-2">This may take a few moments</p>
+            </div>
+          </div>
+        ) : (
+          /* Live Channels Categories */
+          <div className="space-y-4">
+            {Object.entries(channelsByCategory).map(([category, channels]) => (
+              <CategorySection
+                key={category}
+                title={category}
+                channels={channels}
+                onChannelClick={handleChannelClick}
+              />
+            ))}
+            
+            {Object.keys(channelsByCategory).length === 0 && (
+              <div className="container mx-auto px-4 py-16 text-center">
+                <p className="text-lg text-muted-foreground">No channels available</p>
+                <button 
+                  onClick={loadM3UPlaylists}
+                  className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                >
+                  Retry Loading
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Footer Section */}
         <footer className="glass border-t border-border/50 mt-16">
