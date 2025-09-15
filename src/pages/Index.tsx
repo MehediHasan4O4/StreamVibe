@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
+import Layout from '@/components/Layout';
 import Hero from '@/components/Hero';
 import CategorySection from '@/components/CategorySection';
 import VideoPlayer from '@/components/VideoPlayer';
@@ -104,14 +104,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <Header 
-        onSearch={handleSearch}
-        searchResults={searchResults}
-        onChannelSelect={handleChannelClick}
-      />
-      
-      <main>
+    <Layout
+      onSearch={handleSearch}
+      searchResults={searchResults}
+      onChannelSelect={handleChannelClick}
+    >
+      <div className="pb-20 lg:pb-4">
         {/* Hero Section */}
         <Hero />
 
@@ -145,7 +143,9 @@ const Index = () => {
                   Retry Loading
                 </button>
               </div>
-            )}
+        )}
+      </div>
+    </Layout>
           </div>
         )}
 
