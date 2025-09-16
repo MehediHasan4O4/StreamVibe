@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Play, Menu, X } from 'lucide-react';
@@ -15,12 +16,15 @@ const Header = ({ onSearch, searchResults = [], onChannelSelect }: HeaderProps) 
   const [showSearch, setShowSearch] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const navItems = [
-    { name: 'Live', href: '#', active: true },
-    { name: 'Movies', href: '#' },
-    { name: 'Series', href: '#' },
-    { name: 'Sports', href: '#' },
-    { name: 'News', href: '#' },
+    { name: 'Home', path: '/' },
+    { name: 'Live TV', path: '/live' },
+    { name: 'Movies', path: '/movies' },
+    { name: 'Sports', path: '/sports' },
+    { name: 'Favorites', path: '/favorites' },
   ];
 
   useEffect(() => {
@@ -56,33 +60,36 @@ const Header = ({ onSearch, searchResults = [], onChannelSelect }: HeaderProps) 
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className={`text-sm font-medium transition-all duration-300 hover:text-primary ${
-                  item.active 
-                    ? 'text-primary border-b-2 border-primary pb-1' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {item.name}
-              </a>
-            ))}
+            {navItems.map((item) => {
+              const isActive = currentPath === item.path;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`text-sm font-medium transition-all duration-300 ${
+                    isActive
+                      ? 'text-primary border-b-2 border-primary pb-1'
+                      : 'text-muted-foreground hover:text-foreground hover:text-primary'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Search */}
           {showSearch && (
             <div className="absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border shadow-lg z-50">
               <div className="container mx-auto px-4 py-6">
-                <div className="relative max-w-2xl mx-auto">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                <div className="relative max-w-4xl mx-auto">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-6 w-6" />
                   <Input
                     type="text"
                     placeholder="Search channels, movies, sports..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-6 py-4 text-lg bg-muted/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full pl-14 pr-6 py-5 text-xl bg-muted/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     autoFocus
                   />
                   
@@ -140,19 +147,23 @@ const Header = ({ onSearch, searchResults = [], onChannelSelect }: HeaderProps) 
             <div className="flex flex-col gap-4 pt-4">              
               {/* Mobile Navigation */}
               <nav className="flex flex-col gap-2">
-                {navItems.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      item.active 
-                        ? 'bg-primary/10 text-primary border border-primary/20' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                    }`}
-                  >
-                    {item.name}
-                  </a>
-                ))}
+                {navItems.map((item) => {
+                  const isActive = currentPath === item.path;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                        isActive
+                          ? 'bg-primary/10 text-primary border border-primary/20'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
           </div>

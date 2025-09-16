@@ -49,15 +49,6 @@ const Sidebar = () => {
           })}
         </nav>
         
-        <div className="mt-8 pt-4 border-t border-border/50">
-          <Link
-            to="/admin"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
-          >
-            <Settings className="h-5 w-5" />
-            Admin Panel
-          </Link>
-        </div>
       </div>
     </aside>
   );

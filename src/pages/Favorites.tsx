@@ -5,6 +5,7 @@ import VideoPlayer from '@/components/VideoPlayer';
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Trash2, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface FavoriteChannel {
   id: string;
@@ -150,10 +151,10 @@ const Favorites = () => {
                 Start adding channels to your favorites for quick access. Look for the heart icon on any channel.
               </p>
               <Button asChild>
-                <a href="/live">
+                <Link to="/live">
                   <Play className="h-4 w-4 mr-2" />
                   Browse Channels
-                </a>
+                </Link>
               </Button>
             </div>
           </div>
