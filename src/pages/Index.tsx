@@ -122,7 +122,6 @@ const Index = () => {
             </div>
           </div>
         ) : (
-          /* Live Channels Categories */
           <div className="space-y-4">
             {Object.entries(channelsByCategory).map(([category, channels]) => (
               <CategorySection
@@ -143,9 +142,7 @@ const Index = () => {
                   Retry Loading
                 </button>
               </div>
-        )}
-      </div>
-    </Layout>
+            )}
           </div>
         )}
 
@@ -173,7 +170,7 @@ const Index = () => {
             </div>
           </div>
         </footer>
-      </main>
+      </div>
 
       {/* Video Player Modal */}
       <VideoPlayer
@@ -183,7 +180,7 @@ const Index = () => {
         relatedChannels={getRelatedChannels(selectedChannel)}
         onChannelSelect={handleChannelClick}
       />
-    </div>
+    </Layout>
   );
 };
 
