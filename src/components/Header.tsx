@@ -74,14 +74,14 @@ const Header = ({ onSearch, searchResults = [], onChannelSelect }: HeaderProps) 
           {/* Search */}
           <div className="flex items-center gap-4 flex-1 mx-8">
             {showSearch && (
-              <div className="relative w-full max-w-2xl">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <div className="relative w-full max-w-4xl">
+                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 h-6 w-6 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Search channels, movies, sports..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 pr-4 py-3 text-base glass border-border/50 bg-transparent text-foreground placeholder:text-muted-foreground focus:ring-primary/50 rounded-xl"
+                  className="pl-16 pr-6 py-5 text-lg glass border-border/50 bg-transparent text-foreground placeholder:text-muted-foreground focus:ring-primary/50 rounded-xl h-14"
                   autoFocus
                 />
                 
