@@ -72,42 +72,44 @@ const Header = ({ onSearch, searchResults = [], onChannelSelect }: HeaderProps) 
           </nav>
 
           {/* Search */}
-          <div className="flex items-center gap-4 flex-1 mx-8">
-            {showSearch && (
-              <div className="relative w-full max-w-4xl">
-                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 h-6 w-6 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search channels, movies, sports..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-16 pr-6 py-5 text-lg glass border-border/50 bg-transparent text-foreground placeholder:text-muted-foreground focus:ring-primary/50 rounded-xl h-14"
-                  autoFocus
-                />
-                
-                {/* Search Results */}
-                {showResults && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/50 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-                    {searchResults.map((channel) => (
-                      <div
-                        key={channel.id}
-                        onClick={() => handleChannelClick(channel)}
-                        className="flex items-center gap-3 p-4 hover:bg-muted cursor-pointer border-b border-border/50 last:border-b-0 transition-colors"
-                      >
-                        <div className="w-12 h-8 bg-gradient-to-br from-primary/20 to-secondary/20 rounded flex items-center justify-center">
-                          <Play className="h-4 w-4 text-primary" />
+          {showSearch && (
+            <div className="absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border shadow-lg z-50">
+              <div className="container mx-auto px-4 py-6">
+                <div className="relative max-w-2xl mx-auto">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                  <Input
+                    type="text"
+                    placeholder="Search channels, movies, sports..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-6 py-4 text-lg bg-muted/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    autoFocus
+                  />
+                  
+                  {/* Search Results */}
+                  {showResults && searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/50 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                      {searchResults.map((channel) => (
+                        <div
+                          key={channel.id}
+                          onClick={() => handleChannelClick(channel)}
+                          className="flex items-center gap-3 p-4 hover:bg-muted cursor-pointer border-b border-border/50 last:border-b-0 transition-colors"
+                        >
+                          <div className="w-12 h-8 bg-gradient-to-br from-primary/20 to-secondary/20 rounded flex items-center justify-center">
+                            <Play className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-foreground">{channel.name}</div>
+                            <div className="text-sm text-muted-foreground">{channel.category}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-medium text-foreground">{channel.name}</div>
-                          <div className="text-sm text-muted-foreground">{channel.category}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">

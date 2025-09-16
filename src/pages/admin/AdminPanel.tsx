@@ -17,7 +17,8 @@ import {
   Tv,
   Film,
   Trophy,
-  Star
+  Star,
+  Home
 } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -28,7 +29,6 @@ const AdminPanel = () => {
     { id: 3, name: 'Sports', type: 'sports', channels: [] }
   ]);
 
-  // Note: This is a basic structure. For full functionality, connect to Supabase
   const handleAddSection = () => {
     toast({
       title: "Feature Coming Soon",
@@ -51,10 +51,13 @@ const AdminPanel = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Admin Panel</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Admin Panel
+            </h1>
             <p className="text-muted-foreground">Manage your streaming content</p>
           </div>
           <Button onClick={() => window.location.href = '/'} variant="outline">
+            <Home className="h-4 w-4 mr-2" />
             Back to Site
           </Button>
         </div>
@@ -177,7 +180,6 @@ const AdminPanel = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Add by URL */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -201,7 +203,6 @@ const AdminPanel = () => {
                 </CardContent>
               </Card>
 
-              {/* Add by File */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
