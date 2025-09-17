@@ -34,11 +34,11 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <Button variant="default" size="lg" className="text-base px-8 py-6 h-auto">
+            <Button variant="default" size="lg" className="text-base px-8 py-6 h-auto bg-primary hover:bg-primary-dark text-primary-foreground font-semibold rounded-lg">
               <Play className="h-5 w-5 mr-2 fill-current" />
               Start Watching Free
             </Button>
-            <Button variant="outline" size="lg" className="text-base px-8 py-6 h-auto">
+            <Button variant="outline" size="lg" className="text-base px-8 py-6 h-auto border-border bg-transparent hover:bg-muted text-foreground font-semibold rounded-lg">
               Browse Channels
             </Button>
           </div>

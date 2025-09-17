@@ -59,20 +59,23 @@ const Header = ({ onSearch, searchResults = [], onChannelSelect }: HeaderProps) 
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-8">
             {navItems.map((item) => {
               const isActive = currentPath === item.path;
               return (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`text-sm font-medium transition-all duration-300 ${
+                  className={`text-sm font-medium transition-all duration-300 relative ${
                     isActive
-                      ? 'text-primary border-b-2 border-primary pb-1'
-                      : 'text-muted-foreground hover:text-foreground hover:text-primary'
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {item.name}
+                  {isActive && (
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full"></div>
+                  )}
                 </Link>
               );
             })}

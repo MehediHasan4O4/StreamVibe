@@ -1,25 +1,15 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Edit, Plus, Upload, Link as LinkIcon, Home, Settings as SettingsIcon, Tv, FileText, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Settings, 
-  Plus, 
-  Trash2, 
-  Edit, 
-  Save,
-  Upload,
-  Link,
-  Tv,
-  Film,
-  Trophy,
-  Star,
-  Home
-} from 'lucide-react';
+import { Link } from "react-router-dom";
 
 const AdminPanel = () => {
   const { toast } = useToast();
@@ -47,26 +37,39 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Admin Panel
-            </h1>
-            <p className="text-muted-foreground">Manage your streaming content</p>
+      {/* Header */}
+      <header className="glass border-b border-border/50 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Play className="h-8 w-8 text-primary animate-pulse" fill="currentColor" />
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg animate-glow"></div>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  StreamVibe Admin
+                </h1>
+                <p className="text-sm text-muted-foreground">Content Management System</p>
+              </div>
+            </div>
+            <Link to="/">
+              <Button variant="outline" size="sm">
+                <Home className="h-4 w-4 mr-2" />
+                Back to Site
+              </Button>
+            </Link>
           </div>
-          <Button onClick={() => window.location.href = '/'} variant="outline">
-            <Home className="h-4 w-4 mr-2" />
-            Back to Site
-          </Button>
         </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
 
         {/* Backend Notice */}
         <Card className="mb-8 border-yellow-500/50 bg-yellow-500/5">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 text-yellow-600 dark:text-yellow-400">
-              <Settings className="h-5 w-5" />
+              <SettingsIcon className="h-5 w-5" />
               <div>
                 <p className="font-medium">Backend Integration Required</p>
                 <p className="text-sm">Connect to Supabase to enable full admin functionality including authentication, database operations, and content management.</p>
@@ -166,7 +169,7 @@ const AdminPanel = () => {
                 </div>
 
                 <Button className="w-full" onClick={handleAddChannel}>
-                  <Save className="h-4 w-4 mr-2" />
+                  <SettingsIcon className="h-4 w-4 mr-2" />
                   Save Channel
                 </Button>
               </CardContent>
@@ -183,7 +186,7 @@ const AdminPanel = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Link className="h-5 w-5" />
+                    <LinkIcon className="h-5 w-5" />
                     Add Playlist by URL
                   </CardTitle>
                 </CardHeader>
@@ -252,10 +255,10 @@ const AdminPanel = () => {
                   <Input id="logo-url" placeholder="https://example.com/logo.png" />
                 </div>
 
-                <Button>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Settings
-                </Button>
+                  <Button className="w-full">
+                    <SettingsIcon className="h-4 w-4 mr-2" />
+                    Save Settings
+                  </Button>
               </CardContent>
             </Card>
           </TabsContent>
