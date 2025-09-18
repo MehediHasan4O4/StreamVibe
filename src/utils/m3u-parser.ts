@@ -1,3 +1,5 @@
+import { getActivePlaylists } from '@/services/playlistService';
+
 export interface M3UChannel {
   id: string;
   name: string;
@@ -18,6 +20,10 @@ export interface M3UPlaylist {
 export const parseM3U = async (url: string): Promise<M3UChannel[]> => {
   try {
     const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const text = await response.text();
     
     const lines = text.split('\n').map(line => line.trim()).filter(line => line);
@@ -43,11 +49,18 @@ export const parseM3U = async (url: string): Promise<M3UChannel[]> => {
           const groupMatch = info.match(/group-title="([^"]+)"/);
           const group = groupMatch ? groupMatch[1] : 'General';
           
+          // Extract tvg-id for better identification
+          const tvgIdMatch = info.match(/tvg-id="([^"]+)"/);
+          const tvgId = tvgIdMatch ? tvgIdMatch[1] : null;
+          
           // Clean up channel name (remove extra quotes and formatting)
           name = name.replace(/"/g, '').trim();
           
+          // Generate unique ID
+          const channelId = tvgId || `channel_${channels.length + 1}_${Date.now()}`;
+          
           const channel: M3UChannel = {
-            id: `channel_${channels.length + 1}`,
+            id: channelId,
             name,
             logo,
             group,
@@ -66,36 +79,61 @@ export const parseM3U = async (url: string): Promise<M3UChannel[]> => {
     return channels;
   } catch (error) {
     console.error('Error parsing M3U playlist:', error);
-    return [];
+    throw new Error(`Failed to parse M3U playlist: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
+// Load playlists ONLY from Firebase Admin Panel
 export const loadPlaylists = async (): Promise<M3UPlaylist[]> => {
-  const playlistUrls = [
-    {
-      name: 'Mix Channels',
-      url: 'https://raw.githubusercontent.com/srpremiumbd/SR_PREMIUM_BD/226a25d0bc00dc46d3c5cecc2bf082664b148b41/Mix%20M3u8'
-    },
-    {
-      name: 'NS Player',
-      url: 'https://raw.githubusercontent.com/abusaeeidx/Toffee-playlist/refs/heads/main/NS_player.m3u'
+  try {
+    // Get active playlists from Firebase ONLY
+    const adminPlaylists = await getActivePlaylists();
+    
+    if (adminPlaylists.length === 0) {
+      console.log('No active playlists found in admin panel');
+      return [];
     }
-  ];
-  
-  const playlists: M3UPlaylist[] = [];
-  
-  for (const playlist of playlistUrls) {
-    try {
-      const channels = await parseM3U(playlist.url);
-      playlists.push({
-        name: playlist.name,
-        url: playlist.url,
-        channels
-      });
-    } catch (error) {
-      console.error(`Error loading playlist ${playlist.name}:`, error);
+    
+    const playlists: M3UPlaylist[] = [];
+    
+    for (const playlist of adminPlaylists) {
+      try {
+        const channels = await parseM3U(playlist.url);
+        playlists.push({
+          name: playlist.name,
+          url: playlist.url,
+          channels
+        });
+      } catch (error) {
+        console.error(`Error loading playlist ${playlist.name}:`, error);
+        // Continue with other playlists even if one fails
+      }
     }
+    
+    return playlists;
+  } catch (error) {
+    console.error('Error loading playlists from Firebase:', error);
+    return []; // Return empty array if Firebase fails
   }
-  
-  return playlists;
+};
+
+// Validate M3U URL format
+export const validateM3UUrl = (url: string): boolean => {
+  try {
+    const urlObj = new URL(url);
+    const validProtocols = ['http:', 'https:'];
+    const validExtensions = ['.m3u', '.m3u8'];
+    
+    if (!validProtocols.includes(urlObj.protocol)) {
+      return false;
+    }
+    
+    const pathname = urlObj.pathname.toLowerCase();
+    const hasValidExtension = validExtensions.some(ext => pathname.endsWith(ext));
+    const isRawGithub = urlObj.hostname === 'raw.githubusercontent.com';
+    
+    return hasValidExtension || isRawGithub;
+  } catch {
+    return false;
+  }
 };
