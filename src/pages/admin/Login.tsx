@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,24 +31,23 @@ const AdminLogin = () => {
 
     setLoading(true);
     
-    // Simulate login - In a real app, this would connect to Firebase Auth
-    setTimeout(() => {
-      if (email === 'admin@streamvibe.com' && password === 'admin123') {
-        localStorage.setItem('admin_logged_in', 'true');
-        toast({
-          title: "Login Successful",
-          description: "Welcome to the admin panel",
-        });
-        navigate('/admin/dashboard');
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password",
-          variant: "destructive",
-        });
-      }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({
+        title: "Login Successful",
+        description: "Welcome to the admin panel",
+      });
+      navigate('/admin/dashboard');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid email or password",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -89,6 +90,7 @@ const AdminLogin = () => {
                   placeholder="admin@streamvibe.com"
                   className="mt-2"
                   disabled={loading}
+                  required
                 />
               </div>
 
@@ -103,6 +105,7 @@ const AdminLogin = () => {
                     placeholder="Enter your password"
                     className="pr-10"
                     disabled={loading}
+                    required
                   />
                   <Button
                     type="button"
@@ -121,15 +124,6 @@ const AdminLogin = () => {
                 {loading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
-
-            {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Demo Credentials:</p>
-              <div className="text-sm font-mono">
-                <div>Email: admin@streamvibe.com</div>
-                <div>Password: admin123</div>
-              </div>
-            </div>
 
             {/* Back to Home */}
             <div className="mt-6 text-center">
