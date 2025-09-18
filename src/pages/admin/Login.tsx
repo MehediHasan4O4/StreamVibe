@@ -40,9 +40,29 @@ const AdminLogin = () => {
       navigate('/admin/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
+      let errorMessage = "Invalid email or password";
+      
+      // Handle specific Firebase auth errors
+      switch (error.code) {
+        case 'auth/user-not-found':
+          errorMessage = "No account found with this email";
+          break;
+        case 'auth/wrong-password':
+          errorMessage = "Incorrect password";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "Invalid email address";
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = "Too many failed attempts. Please try again later";
+          break;
+        default:
+          errorMessage = error.message || "Login failed";
+      }
+      
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
